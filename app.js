@@ -1,10 +1,13 @@
 const express = require("express");
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const employerRouter = require('./routes/employer');
 require('dotenv').config();
 const app = express();
 
+app.use(bodyParser.json());
 app.use(express.json());
+
 app.use('/api/v1/employers', employerRouter);
 
 const start =  async () => {

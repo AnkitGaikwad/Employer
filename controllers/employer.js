@@ -1,4 +1,5 @@
 const Employer = require('../models/employer');
+const Employee = require('../models/employee');
 const jwt = require('jsonwebtoken');
 
 //using callback for logining employer
@@ -43,20 +44,63 @@ const registerEmployers = (req, res) => {
 //     }
 // }
 
+//using callback to update data
 const updateEmployer = (req, res) => {
-    console.log(req.user.userId);
-    const email = JSON.stringify(req.body.userId);
-    console.log(typeof(email));
-    Employer.find({Email: email, Password: req.body.Password}, (err, data) => {
+    const email = req.user.userId;
+    Employer.find({Email: email}, (err, data) => {
         if (err) return handleError(err);
-        console.log(data);
+        Employer.findByIdAndUpdate({_id: data[0]._id}, req.body, {new: true, runValidators: true},(err1, data1) => {
+            if (err1) return res.status(500).send(err1);
+            res.status(200).json({"Welcome : ": data[0].Name, data: data1});
+        });
     });
-    //Employer.findByIdAndUpdate();
-    res.send("Welcome : " + JSON.stringify(req.user.userId));
 };
+
+//using async to update data
+// const updateEmployer = async (req, res) => {
+//     try {
+//         const email = req.user.userId;
+//         const id = await Employer.find({Email: email});
+//         const employer = await Employer.findByIdAndUpdate({_id: id[0]._id}, req.body, {new: true, runValidators: true});
+//         res.status(200).json({"Welcome : ": id[0].Name, data: employer});
+//     } catch (err) {
+//         res.status(404).send("Error updating employer");
+//     }
+// };
+
+//using callback to create employee
+const createEmployee = (req, res) => {
+    const email = req.user.userId;
+    Employer.find({Email: email}, (err, data) => {
+        if (err) return handleError(err);
+        const employee = req.body;
+        employee.Password = 'temp123';
+        employee.Company = data[0].Company;
+        Employee.create(employee, (err1, data1) => {
+            if (err1) return handleError(err1);
+            res.status(200).json(data1);
+        });
+    });
+};
+
+//using async to create employee
+// const createEmployee = async (req, res) => {
+//     try {
+//         const email = req.user.userId;
+//         const id = await Employer.find({Email: email});
+//         const employee = req.body;
+//         employee.Password = 'temp123';
+//         employee.Company = id[0].Company;
+//         const employeeFinal = await Employee.create(employee);
+//         res.status(200).json(employeeFinal);
+//     } catch (err) {
+//         res.status(404).send("Error creating employee");
+//     }
+// };
 
 module.exports = {
     loginEmployers,
     updateEmployer,
-    registerEmployers
+    registerEmployers,
+    createEmployee
 };
